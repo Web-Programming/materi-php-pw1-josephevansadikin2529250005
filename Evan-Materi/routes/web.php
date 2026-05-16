@@ -1,21 +1,56 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+
+// ==================== HOME ====================
 
 Route::get('/', function () {
-    echo "hello evan";
-});
+    return view('home');
+})->name('home');
 
-Route::get('/profil', function () {
-    echo "nama : evan <br>";
-    echo "NPM : 2529250005 <br>";
-});
+// ==================== ROUTE AUTHENTIKASI ====================
 
-Route::get('/profil/{nama}/{npm}', function ($nama, $npm) {
-    echo "nama : " . $nama . "<br>";
-    echo "NPM : " . $npm . " <br>";
+// Tampilkan form register
+Route::get('/register', [AuthController::class, 'registerForm'])
+    ->name('register')
+    ->middleware('guest'); // hanya bisa diakses jika BELUM login
+
+// Proses simpan register
+Route::post('/register', [AuthController::class, 'register'])
+    ->middleware('guest');
+
+// Tampilkan form login
+Route::get('/login', [AuthController::class, 'loginForm'])
+    ->name('login')          // nama route ini WAJIB 'login' agar middleware auth berfungsi
+    ->middleware('guest');
+
+// Proses login
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('guest');
+
+// Proses logout (gunakan POST untuk keamanan, bukan GET)
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->name('logout')
+    ->middleware('auth');   // hanya bisa diakses jika SUDAH login
+
+
+// ==================== ROUTE YANG DILINDUNGI ====================
+
+// Semua route di dalam group ini hanya bisa diakses jika sudah login
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/barang', [BarangController::class, 'index']);
+    Route::get('/barang/create', [BarangController::class, 'create']);
+    Route::get('/barang/{id}', [BarangController::class, 'show']);
+    Route::get('/barang/edit/{id}', [BarangController::class, 'edit']);
+    Route::post('/barang', [BarangController::class, 'store']);
+    Route::put('/barang/update/{id}', [BarangController::class, 'update']);
+    Route::delete('/barang/{id}', [BarangController::class, 'destroy']);
+
+    //Daftarkan Route Lainnya di Sini : 
+    // - Route Supplier
 });
